@@ -1,0 +1,125 @@
+package utils;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.*;
+
+import java.time.Duration;
+import java.util.logging.Logger;
+
+public class BaseTest {
+
+    private static final Logger logger = Logger.getLogger(BaseTest.class.getName());
+    private static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<WebDriverWait> waitThreadLocal = new ThreadLocal<>();
+    private static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
+    private static final Duration EXPLICIT_WAIT = Duration.ofSeconds(15);
+    private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(30);
+
+    public static WebDriver getDriver() {
+        WebDriver driver = driverThreadLocal.get();
+        if (driver == null) {
+            throw new RuntimeException("WebDriver not initialized. Call @BeforeMethod first.");
+        }
+        return driver;
+    }
+
+     public static WebDriverWait getWait() {
+        WebDriverWait wait = waitThreadLocal.get();
+        if (wait == null) {
+            throw new RuntimeException("WebDriverWait not initialized. Call @BeforeMethod first.");
+        }
+        return wait;
+    }
+
+    @BeforeMethod(alwaysRun = true)
+    @Parameters({"browser"})
+    public  void setupDriver(@Optional("chrome") String browser) {
+
+        logger.info("========== Setting up WebDriver for browser: " + browser + " ==========");
+
+        try {
+            WebDriver driver = createDriver(browser.toLowerCase());
+            configureDriver(driver);
+
+            driverThreadLocal.set(driver);
+            waitThreadLocal.set(new WebDriverWait(driver, EXPLICIT_WAIT));
+
+            logger.info("========== WebDriver initialized successfully ==========");
+        } catch (Exception e) {
+            logger.severe("Failed to initialize WebDriver: " + e.getMessage());
+            throw new RuntimeException("WebDriver setup failed", e);
+        }
+    }
+    @BeforeMethod(alwaysRun = true, dependsOnMethods = "setupDriver")
+    public void setupTestData() {
+        logger.info("========== Step 2: Setting up test data ==========");
+        logger.info("Default: No test data setup. Override in test class to customize.");
+    }
+
+    private WebDriver createDriver(String browser) {
+        switch (browser) {
+            case "firefox":
+                return new FirefoxDriver(getFirefoxOptions());
+            case "chrome":
+            default:
+                return new ChromeDriver(getChromeOptions());
+        }
+    }
+
+    private ChromeOptions getChromeOptions() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--start-maximized");
+        options.addArguments("--disable-blink-features=AutomationControlled");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
+        options.setExperimentalOption("useAutomationExtension", false);
+        return options;
+    }
+
+
+    private FirefoxOptions getFirefoxOptions() {
+        FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("--start-maximized");
+        return options;
+    }
+
+
+
+
+
+    private void configureDriver(WebDriver driver) {
+        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT);
+        driver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
+    }
+
+    @BeforeMethod(dependsOnMethods = "setupDriver",alwaysRun = true)
+    public void navigateToApp() {
+        String appUrl = System.getProperty("app.url", "http://localhost:3000/");
+        logger.info("Navigating to: " + appUrl);
+        getDriver().get(appUrl);
+    }
+    @AfterMethod(alwaysRun = true)
+    public  void TearDown() {
+        WebDriver driver = driverThreadLocal.get();
+        if (driver != null) {
+            try {
+                logger.info("Tearing down driver");
+                driver.quit();
+            } catch (Exception e) {
+                logger.warning("Error during driver quit: " + e.getMessage());
+            } finally {
+                driverThreadLocal.remove();
+                waitThreadLocal.remove();
+            }
+        }
+
+
+    }
+}
