@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'openjdk'
+          distribution: 'temurin'
           cache: maven
 
       - name: Start AUT (OWASP Juice Shop)
@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'openjdk'
+          distribution: 'temurin'
           cache: maven
 
       - name: Start AUT (OWASP Juice Shop)
@@ -70,7 +70,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'openjdk'
+          distribution: 'temurin'
           cache: maven
 
       - name: Start AUT (OWASP Juice Shop)
