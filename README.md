@@ -50,7 +50,7 @@
 juice-shop-selenium-tests/
 ├── src/test/java/
 │   ├── pages/                   # Page Object Model classes
-│   ├── tests/                   # 45+ Test cases
+│   ├── tests/                   # Test cases
 │   └── utils/                   # Utilities & helpers
 ├── docker-compose.yml           # AUT setup
 ├── pom.xml                      # Maven dependencies & plugins
