@@ -29,7 +29,7 @@ jobs:
           sleep 20
           echo "AUT should be ready"
 
-  login-tests:
+  tests:
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -49,22 +49,16 @@ jobs:
       - name: Wait for AUT to be ready
         run: sleep 20
 
-      - name: Run LoginTests
-        run: mvn clean test -Dtest=LoginTests
+      - name: Run Tests
+        run: mvn clean test
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: login-tests-reports
+          name: Tests-reports
           path: target/surefire-reports/
 
-  checkout-tests:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -72,25 +66,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-
-      - name: Start AUT (OWASP Juice Shop)
-        run: docker compose up -d
-
-      - name: Wait for AUT to be ready
-        run: sleep 20
-
-      - name: Run CheckoutTests
-        run: mvn clean test -Dtest=CheckoutTests
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: checkout-tests-reports
-          path: target/surefire-reports/
 
   test-results-summary:
-    needs: [ login-tests, checkout-tests ]
+    needs: [ tests ]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -107,8 +85,8 @@ jobs:
             
             let summary = '## 🧪 Test Results\n\n';
             
-            const loginReportPath = './login-tests-reports/TEST-LoginTests.xml';
-            const checkoutReportPath = './checkout-tests-reports/TEST-CheckoutTests.xml';
+            const testReportPath = './tests-reports/TEST-LoginTests.xml';
+           
             
             if (fs.existsSync(loginReportPath)) {
               const loginContent = fs.readFileSync(loginReportPath, 'utf8');
