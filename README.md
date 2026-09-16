@@ -2,6 +2,7 @@
 
 ![Selenium](https://img.shields.io/badge/-Selenium-%2343B02A?style=for-the-badge&logo=selenium&logoColor=white)
  ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)                               ![Maven](https://img.shields.io/badge/apachemaven-%23C71A36.svg?style=for-the-badge&logo=apachemaven&logoColor=white)     
+[![Selenium Tests](https://github.com/ashraf2033/juice-shop-selenium-tests/actions/workflows/selenium-tests.yml/badge.svg)](https://github.com/ashraf2033/juice-shop-selenium-tests/actions/workflows/selenium-tests.yml)
 ## 🎯 What This Portfolio Demonstrates
  
 - **Page Object Model (POM)** for maintainable, reusable test code
