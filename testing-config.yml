@@ -1,0 +1,8 @@
+server:
+  port: 3000
+application:
+  name: "Repo-Bundled Juice Shop"
+  welcomeBanner:
+    showOnFirstStart: false
+data:
+  storageLocation: "./data/juiceshop-test.sqlite"

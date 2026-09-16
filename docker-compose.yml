@@ -1,0 +1,10 @@
+
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:snapshot 
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=testing-config
+    volumes:
+      - ./testing-config.yml:/juice-shop/config/testing-config.yml:ro
