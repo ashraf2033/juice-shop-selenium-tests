@@ -7,6 +7,15 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.*;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.OutputType;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import org.testng.ITestResult;
 
 import java.time.Duration;
 import java.util.logging.Logger;
@@ -73,12 +82,19 @@ public class BaseTest {
 
     private ChromeOptions getChromeOptions() {
         ChromeOptions options = new ChromeOptions();
+        boolean isHeadless = Boolean.parseBoolean(System.getProperty("headless", "false"));
+
         options.addArguments("--start-maximized");
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setExperimentalOption("useAutomationExtension", false);
+        if(isHeadless){
+        options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080"); 
+        }        
+        
         return options;
     }
 
@@ -94,9 +110,17 @@ public class BaseTest {
 
 
     private void configureDriver(WebDriver driver) {
+           boolean isHeadless = Boolean.parseBoolean(System.getProperty("headless", "false"));
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT);
         driver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
+
+         if (isHeadless) {
+    
+        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1366, 768));
+    } else {
+        driver.manage().window().maximize();
+    }
     }
 
     @BeforeMethod(dependsOnMethods = "setupDriver",alwaysRun = true)
@@ -106,9 +130,14 @@ public class BaseTest {
         getDriver().get(appUrl);
     }
     @AfterMethod(alwaysRun = true)
-    public  void TearDown() {
+    public  void TearDown(ITestResult result) {
         WebDriver driver = driverThreadLocal.get();
         if (driver != null) {
+              
+            if (result.getStatus() == ITestResult.FAILURE) {
+                captureScreenshot(result.getName());
+            }
+
             try {
                 logger.info("Tearing down driver");
                 driver.quit();
@@ -121,5 +150,21 @@ public class BaseTest {
         }
 
 
+    }
+
+     private void captureScreenshot(String testName) {
+        
+        try {
+            TakesScreenshot ts = (TakesScreenshot) driverThreadLocal.get();
+            File sourceFile = ts.getScreenshotAs(OutputType.FILE);
+            
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String fileName = "failure_" + testName + "_" + timestamp + ".png";
+            
+            Files.copy(sourceFile.toPath(), Paths.get(fileName));
+            System.out.println("NATIVE SCREENSHOT TAKEN ON FAILURE: " + fileName);
+        } catch (Exception e) {
+            System.err.println("Failed to capture screenshot: " + e.getMessage());
+        }
     }
 }

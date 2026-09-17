@@ -50,7 +50,7 @@ jobs:
         run: sleep 20
 
       - name: Run Tests
-        run: mvn clean test
+        run: mvn clean test -Dheadless=true
 
       - name: Upload test results
         if: always()
